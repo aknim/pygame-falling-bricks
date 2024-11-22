@@ -36,6 +36,24 @@ game_over_sound = pygame.mixer.Sound("game_over.wav")
 score = 0
 lives = 3
 
+class Particle:
+    def __init__(self, x, y, color="white"):
+        self.x = x
+        self.y = y
+        self.vx = random.uniform(-2, 2)
+        self.vy = random.uniform(-2, 2)
+        self.life = random.randint(20, 40) # Particle lifespan
+        self.color = color
+
+    def move(self):
+        self.x += self.vx
+        self.y += self.vy
+        self.life -= 1
+
+    def draw(self, screen):
+        if self.life > 0:
+            pygame.draw.circle(screen, self.color, (int(self.x), int(self.y)), 2)
+
 class Brick:
     def __init__(self, x, y, speed, brick_type="regular"):
         self.x = x
@@ -54,9 +72,11 @@ class Brick:
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, (self.x, self.y, BRICK_WIDTH, BRICK_HEIGHT))
 
+particles = []
+
 bricks = []
 brick_spawn_timer = 0 # Timer to control brick spawn rate
-BRICK_SPAWN_RATE = 120 # Spawn a new brick every 30 frames
+BRICK_SPAWN_RATE = 90 # Spawn a new brick every 30 frames
 
 running = True
 while running:
@@ -101,6 +121,10 @@ while running:
         if (brick.y + BRICK_HEIGHT >= paddle_y and
             paddle_x <= brick.x <= paddle_x + PADDLE_WIDTH):
             pygame.mixer.Sound.play(brick_hit_sound)
+
+            # Draw particles
+            for _ in range(10): # Create 10 particles
+                particles.append(Particle(brick.x + BRICK_WIDTH // 2, brick.y + BRICK_HEIGHT // 2, brick.color))
             if brick.type == "regular":
                 score += 10
             elif brick.type == "heavy":
@@ -116,6 +140,13 @@ while running:
             pygame.mixer.Sound.play(miss_sound)
             bricks.remove(brick)
             lives -= 1 # Deduct a life
+
+    # Update and draw particles
+    for particle in particles[:]:
+        particle.move()
+        particle.draw(screen)
+        if particle.life <= 0:
+            particles.remove(particle)
 
     # Draw the score and lives
     font = pygame.font.SysFont(None, 36)
