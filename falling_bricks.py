@@ -25,6 +25,9 @@ BRICK_HEIGHT = 30
 
 FPS = 60
 
+SPEED_INCREASE_THRESHOLD = 100 # Increase speed every 100 points
+MAX_BRICK_SPEED = 1000 # Max speed for bricks
+
 paddle_x = (SCREEN_WIDTH - PADDLE_WIDTH) // 2
 paddle_y = (SCREEN_HEIGHT - PADDLE_HEIGHT - 10)
 paddle_speed = 10
@@ -78,6 +81,19 @@ bricks = []
 brick_spawn_timer = 0 # Timer to control brick spawn rate
 BRICK_SPAWN_RATE = 90 # Spawn a new brick every 30 frames
 
+# Track how much the speed should increase
+def update_brick_speed():
+    global BRICK_SPAWN_RATE, MAX_BRICK_SPEED, SPEED_INCREASE_THRESHOLD
+
+    # Increase brick speed after each threshold
+    if score >= SPEED_INCREASE_THRESHOLD:
+        BRICK_SPAWN_RATE = max(10, BRICK_SPAWN_RATE - 5) # Decrease spawn rate for faster game
+        SPEED_INCREASE_THRESHOLD += 100 # Increase threshold for next speed-up
+
+    # Make bricks fall faster over time based on score
+    brick_speed_increase = min(MAX_BRICK_SPEED, 1 + score // 200) # Increase speed slowly
+    return brick_speed_increase
+
 running = True
 while running:
     for event in pygame.event.get():
@@ -101,12 +117,13 @@ while running:
     # Draw the paddle
     pygame.draw.rect(screen, WHITE, (paddle_x, paddle_y, PADDLE_WIDTH, PADDLE_HEIGHT))
 
+
     # Spawn bricks at intervals
     brick_spawn_timer += 1
     if brick_spawn_timer >= BRICK_SPAWN_RATE:
         brick_spawn_timer = 0
         brick_x = random.randint(0, SCREEN_WIDTH - BRICK_WIDTH)
-        brick_speed = random.randint(3, 7)
+        brick_speed = update_brick_speed()
         brick_type = random.choices(
             ["regular", "heavy", "bonus"], weights = [70, 20, 10], k=1
         )[0]
