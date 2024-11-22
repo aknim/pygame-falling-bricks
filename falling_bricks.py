@@ -28,6 +28,9 @@ paddle_x = (SCREEN_WIDTH - PADDLE_WIDTH) // 2
 paddle_y = (SCREEN_HEIGHT - PADDLE_HEIGHT - 10)
 paddle_speed = 10
 
+score = 0
+lives = 3
+
 class Brick:
     def __init__(self, x, y, speed):
         self.x = x
@@ -80,11 +83,35 @@ while running:
         brick.move()
         brick.draw(screen)
 
+        # Check collision with paddle
+        if (brick.y + BRICK_HEIGHT >= paddle_y and
+            paddle_x <= brick.x <= paddle_x + PADDLE_WIDTH):
+            score += 10 # Increment score
+            bricks.remove(brick)
+            continue
+
         # Remove brick if it falls past the screen
         if brick.y > SCREEN_HEIGHT:
             bricks.remove(brick)
+            lives -= 1 # Deduct a life
+
+    # Draw the score and lives
+    font = pygame.font.SysFont(None, 36)
+    score_text = font.render(f"Score: {score}", True, WHITE)
+    lives_text = font.render(f"Lives: {lives}", True, WHITE)
+    screen.blit(score_text, (10, 10))
+    screen.blit(lives_text, (SCREEN_WIDTH - 120, 10))
+
+    # Check for game over
+    if lives <= 0:
+        running = False
 
     pygame.display.flip()
     clock.tick(FPS)
 
-pygame.quit()
+# Game Over Screen
+screen.fill(BLACK)
+game_over_text = font.render("Game Over", True, RED)
+screen.blit(game_over_text, (SCREEN_WIDTH // 2 - 80, SCREEN_HEIGHT // 2 - 20))
+pygame.display.flip()
+pygame.time.wait(2000)
