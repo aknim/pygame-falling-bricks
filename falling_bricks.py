@@ -24,6 +24,10 @@ BRICK_HEIGHT = 30
 
 FPS = 60
 
+paddle_x = (SCREEN_WIDTH - PADDLE_WIDTH) // 2
+paddle_y = (SCREEN_HEIGHT - PADDLE_HEIGHT - 10)
+paddle_speed = 10
+
 running = True
 
 while running:
@@ -31,7 +35,21 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
+    # Get key states
+    keys = pygame.key.get_pressed()
+
+    # Move paddle
+    if keys[pygame.K_LEFT]:
+        paddle_x -= paddle_speed
+    if keys[pygame.K_RIGHT]:
+        paddle_x += paddle_speed
+
+    # Restrict paddle movement within screen bounds
+    paddle_x = max(0, min(SCREEN_WIDTH - PADDLE_WIDTH, paddle_x))
+
     screen.fill(BLACK)
+    pygame.draw.rect(screen, WHITE, (paddle_x, paddle_y, PADDLE_WIDTH, PADDLE_HEIGHT))
+
     pygame.display.flip()
     clock.tick(FPS)
 
