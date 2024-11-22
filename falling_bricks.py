@@ -10,6 +10,7 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 BLUE = (0 ,0, 255)
+GREEN = (0, 255, 0)
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Falling Bricks")
@@ -32,20 +33,26 @@ score = 0
 lives = 3
 
 class Brick:
-    def __init__(self, x, y, speed):
+    def __init__(self, x, y, speed, brick_type="regular"):
         self.x = x
         self.y = y
         self.speed = speed
+        self.type = brick_type 
+        self.color = RED
+        if(brick_type=="heavy"):
+            self.color = BLUE
+        elif(brick_type=="bonus"):
+            self.color = GREEN
     
     def move(self):
         self.y += self.speed
 
     def draw(self, screen):
-        pygame.draw.rect(screen, RED, (self.x, self.y, BRICK_WIDTH, BRICK_HEIGHT))
+        pygame.draw.rect(screen, self.color, (self.x, self.y, BRICK_WIDTH, BRICK_HEIGHT))
 
 bricks = []
 brick_spawn_timer = 0 # Timer to control brick spawn rate
-BRICK_SPAWN_RATE = 30 # Spawn a new brick every 30 frames
+BRICK_SPAWN_RATE = 120 # Spawn a new brick every 30 frames
 
 running = True
 while running:
@@ -76,7 +83,10 @@ while running:
         brick_spawn_timer = 0
         brick_x = random.randint(0, SCREEN_WIDTH - BRICK_WIDTH)
         brick_speed = random.randint(3, 7)
-        bricks.append(Brick(brick_x, 0, brick_speed))
+        brick_type = random.choices(
+            ["regular", "heavy", "bonus"], weights = [70, 20, 10], k=1
+        )[0]
+        bricks.append(Brick(brick_x, 0, brick_speed, brick_type))
 
     # Update and draw bricks
     for brick in bricks[:]:
@@ -86,7 +96,13 @@ while running:
         # Check collision with paddle
         if (brick.y + BRICK_HEIGHT >= paddle_y and
             paddle_x <= brick.x <= paddle_x + PADDLE_WIDTH):
-            score += 10 # Increment score
+            if brick.type == "regular":
+                score += 10
+            elif brick.type == "heavy":
+                score += 20
+            elif brick.type == "bonus":
+                score += 50
+                lives += 1 
             bricks.remove(brick)
             continue
 
@@ -103,8 +119,8 @@ while running:
     screen.blit(lives_text, (SCREEN_WIDTH - 120, 10))
 
     # Check for game over
-    if lives <= 0:
-        running = False
+    # if lives <= 0:
+    #     running = False
 
     pygame.display.flip()
     clock.tick(FPS)
