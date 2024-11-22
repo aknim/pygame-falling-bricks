@@ -29,6 +29,10 @@ paddle_x = (SCREEN_WIDTH - PADDLE_WIDTH) // 2
 paddle_y = (SCREEN_HEIGHT - PADDLE_HEIGHT - 10)
 paddle_speed = 10
 
+brick_hit_sound = pygame.mixer.Sound("crash.wav")
+miss_sound = pygame.mixer.Sound("miss.wav")
+game_over_sound = pygame.mixer.Sound("game_over.wav")
+
 score = 0
 lives = 3
 
@@ -96,6 +100,7 @@ while running:
         # Check collision with paddle
         if (brick.y + BRICK_HEIGHT >= paddle_y and
             paddle_x <= brick.x <= paddle_x + PADDLE_WIDTH):
+            pygame.mixer.Sound.play(brick_hit_sound)
             if brick.type == "regular":
                 score += 10
             elif brick.type == "heavy":
@@ -108,6 +113,7 @@ while running:
 
         # Remove brick if it falls past the screen
         if brick.y > SCREEN_HEIGHT:
+            pygame.mixer.Sound.play(miss_sound)
             bricks.remove(brick)
             lives -= 1 # Deduct a life
 
@@ -119,8 +125,8 @@ while running:
     screen.blit(lives_text, (SCREEN_WIDTH - 120, 10))
 
     # Check for game over
-    # if lives <= 0:
-    #     running = False
+    if lives <= 0:
+        running = False
 
     pygame.display.flip()
     clock.tick(FPS)
@@ -128,6 +134,7 @@ while running:
 # Game Over Screen
 screen.fill(BLACK)
 game_over_text = font.render("Game Over", True, RED)
+pygame.mixer.Sound.play(game_over_sound)
 screen.blit(game_over_text, (SCREEN_WIDTH // 2 - 80, SCREEN_HEIGHT // 2 - 20))
 pygame.display.flip()
 pygame.time.wait(2000)
